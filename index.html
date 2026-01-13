@@ -739,6 +739,15 @@ document.getElementById('quickAddBtn')
       setPanelTitle();
       renderTable();
     })();
+    document.getElementById('tableViewBtn').onclick = () => {
+  state.view = "table";
+  renderTable();
+};
+
+document.getElementById('cardViewBtn').onclick = () => {
+  state.view = "card";
+  renderTable();
+};
   </script>
 </body>
 </html>
