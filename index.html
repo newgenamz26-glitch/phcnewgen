@@ -122,6 +122,13 @@
       align-items: center;
       padding: 14px 16px;
       border-bottom: 1px solid var(--border);
+      <div class="actions">
+  <button class="btn secondary" id="tableViewBtn">Table</button>
+  <button class="btn secondary" id="cardViewBtn">Cards</button>
+  <button class="btn secondary" id="exportBtn">Export JSON</button>
+  <button class="btn secondary" id="clearBtn">Clear current view</button>
+</div>
+
     }
     .panel-header h2 {
       margin: 0;
@@ -401,7 +408,14 @@
     </div>
   </div>
 <script>
-  state.view = "table"; // table | card
+// table | card
+  const state = {
+  category: "Hospital",
+  subcat: "HTAR",
+  editingId: null,
+  view: "table"
+};
+
 
 function quickAdd() {
   const name = prompt("Enter resource name:");
@@ -482,7 +496,7 @@ document.getElementById('quickAddBtn')
       });
     }
 
-    function renderTable() {
+ function renderTable() {
   const wrap = document.querySelector('.table-wrap');
   wrap.innerHTML = '';
 
@@ -510,6 +524,49 @@ document.getElementById('quickAddBtn')
     wrap.appendChild(cards);
     return;
   }
+
+  wrap.innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Team</th>
+          <th>PPP/PKB</th>
+          <th>Ambulance</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  `;
+
+  const tbody = document.getElementById('tableBody');
+
+  data.forEach(r => {
+    const tr = document.createElement('tr');
+
+    tr.innerHTML = `
+      <td>${r.name}</td>
+      <td>${r.team}</td>
+      <td>${r.ppp}</td>
+      <td>${r.ambulance}</td>
+      <td>
+        <span class="status ${r.status === 'Active' ? 'active' : 'inactive'}">
+          ${r.status}
+        </span>
+      </td>
+      <td>
+        <button class="btn secondary">Edit</button>
+        <button class="btn danger">Delete</button>
+      </td>
+      ';
+    tr.querySelector('.btn.secondary').onclick = () => openModal(r.id);
+    tr.querySelector('.btn.danger').onclick = () => deleteResource(r.id);
+    tbody.appendChild(tr);
+  });
+}
+
 
   // ===== TABLE VIEW (existing logic) =====
   wrap.innerHTML = `
