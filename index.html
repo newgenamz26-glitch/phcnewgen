@@ -449,10 +449,19 @@ document.getElementById('quickAddBtn')
   <script>
     // Data model and persistence
     const SUBCATS = {
-      Hospital: ["HTAR", "HSAS", "HBT", "HASA"],
-      KK: ["KLANG", "K.LANGAT"],
-      STJOHN: ["STJOHN"]
-    };
+       Hospital: {
+    HTAR: ["HTAR1", "HTAR2", "HTAR3", "HTAR4"],
+    HSAS: ["HSAS1", "HSAS2", "HSAS3"],
+    HBT: ["HBT1", "HBT2"],
+    HASA: [] // empty if no sub-subcategories
+  },
+  KK: {
+    KLANG: ["MERU", "KAPAR", "P.INDAH"],
+    "K.LANGAT": ["BKT CHANGGANG", "TGP", "JENJAROM", "BANDAR"]
+  },
+  STJOHN: {
+    STJOHN: [] 
+  };
 
     const state = {
       category: "Hospital",
