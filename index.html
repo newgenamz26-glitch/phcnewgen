@@ -401,6 +401,8 @@
     </div>
   </div>
 <script>
+  state.view = "table"; // table | card
+
 function quickAdd() {
   const name = prompt("Enter resource name:");
   if (!name) return;
@@ -481,19 +483,56 @@ document.getElementById('quickAddBtn')
     }
 
     function renderTable() {
-      const tbody = document.getElementById('tableBody');
-      tbody.innerHTML = '';
-      const data = loadData().filter(r => r.category === state.category && r.subcat === state.subcat);
-      if (data.length === 0) {
-        const tr = document.createElement('tr');
-        const td = document.createElement('td');
-        td.colSpan = 6;
-        td.style.color = '#94a3b8';
-        td.textContent = 'No resources yet. Click "Add resource" to create one.';
-        tr.appendChild(td);
-        tbody.appendChild(tr);
-        return;
-      }
+  const wrap = document.querySelector('.table-wrap');
+  wrap.innerHTML = '';
+
+  const data = loadData()
+    .filter(r => r.category === state.category && r.subcat === state.subcat);
+
+  if (state.view === "card") {
+    const cards = document.createElement('div');
+    cards.className = 'cards';
+
+    data.forEach(r => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <h4>${r.name}</h4>
+        <div class="muted">${r.team}</div>
+        <div>${r.ppp} • ${r.ambulance || 'No Ambulance'}</div>
+        <div class="status ${r.status === 'Active' ? 'active' : 'inactive'}">
+          ${r.status}
+        </div>
+      `;
+      cards.appendChild(card);
+    });
+
+    wrap.appendChild(cards);
+    return;
+  }
+
+  // ===== TABLE VIEW (existing logic) =====
+  wrap.innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Team</th>
+          <th>PPP</th>
+           <th>PKB</th>
+          <th>Ambulance</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  `;
+  // reuse your existing row render
+  document.getElementById('tableBody').innerHTML = '';
+  data.forEach(r => { /* existing row code */ });
+}
+
       data.forEach(r => {
         const tr = document.createElement('tr');
 
@@ -521,7 +560,8 @@ document.getElementById('quickAddBtn')
 
         tr.appendChild(tdName);
         tr.appendChild(tdTeam);
-        tr.appendChild(tdPPP);
+        tr.appendChild(tdPPP);   
+        tr.appendChild(tdPKB);
         tr.appendChild(tdAmb);
         tr.appendChild(tdStatus);
         tr.appendChild(tdActions);
@@ -534,7 +574,8 @@ document.getElementById('quickAddBtn')
     const backdrop = document.getElementById('modalBackdrop');
     const resName = document.getElementById('resName');
     const resTeam = document.getElementById('resTeam');
-    const resPPP = document.getElementById('resPPP');
+    const resPPP = document.getElementById('resPPP'); 
+    const resPKB = document.getElementById('resPKB');
     const resAmb = document.getElementById('resAmb');
     const resStatus = document.getElementById('resStatus');
     const resCategory = document.getElementById('resCategory');
@@ -556,6 +597,7 @@ document.getElementById('quickAddBtn')
       resName.value = '';
       resTeam.value = '';
       resPPP.value = 'PPP';
+      resPkb.value = 'Pkb';
       resAmb.value = '';
       resStatus.value = 'Active';
       resCategory.value = state.category;
@@ -568,7 +610,8 @@ document.getElementById('quickAddBtn')
         if (item) {
           resName.value = item.name;
           resTeam.value = item.team;
-          resPPP.value = item.ppp;
+          resPPP.value = item.ppp; 
+          resPKB.value = item.pkb;
           resAmb.value = item.ambulance;
           resStatus.value = item.status;
           resCategory.value = item.category;
@@ -589,7 +632,7 @@ document.getElementById('quickAddBtn')
     function resetForm() {
       resName.value = '';
       resTeam.value = '';
-      resPPP.value = 'PPP';
+      resPPP.value = 'PPP'; resPKB.value = 'PKB';
       resAmb.value = '';
       resStatus.value = 'Active';
       resCategory.value = state.category;
@@ -602,7 +645,7 @@ document.getElementById('quickAddBtn')
         id: state.editingId || crypto.randomUUID(),
         name: resName.value.trim(),
         team: resTeam.value.trim(),
-        ppp: resPPP.value,
+        ppp: resPPP.value,pkb: resPKB.value,
         ambulance: resAmb.value.trim(),
         status: resStatus.value,
         category: resCategory.value,
