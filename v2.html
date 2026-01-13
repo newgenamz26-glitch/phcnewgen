@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Resource Center Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #e0f2ff;
+      --panel: #d0ebff;
+      --muted: #6b7280;
+      --text: #1e293b;
+      --primary: #3b82f6;
+      --primary-700: #2563eb;
+      --accent: #22c55e;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --border: #93c5fd;
+      --chip: #bfdbfe;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background: linear-gradient(180deg, #d0ebff 0%, #e0f2ff 100%);
+      color: var(--text);
+    }
+    .container {
+      max-width: 1200px;
+      margin: 24px auto;
+      padding: 0 16px;
+    }
+    header {
+      background: var(--panel);
+      border: 1px solid var(--primary-700);
+      border-radius: 14px;
+      padding: 16px;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr auto;
+      gap: 12px;
+      align-items: center;
+      box-shadow: 0 6px 18px rgba(59, 130, 246, 0.25);
+    }
+    header h1 {
+      margin: 0;
+      font-size: 20px;
+      letter-spacing: 0.5px;
+      color: var(--primary-700);
+    }
+    .control {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .control label { font-size: 12px; color: var(--text); }
+    .control input[type="date"], .control select {
+      background: white; color: var(--text); border: 1px solid var(--primary-700);
+      border-radius: 10px; padding: 8px 10px; outline: none; width: 100%;
+    }
+    .btn {
+      padding: 10px 14px; border-radius: 10px; border: 1px solid var(--primary-700);
+      background: var(--primary); color: white; cursor: pointer;
+      font-weight: 600; font-size: 13px; transition: transform 0.05s ease, box-shadow 0.2s ease;
+    }
+    .btn:hover { box-shadow: 0 6px 18px rgba(59,130,246,0.25); }
+    .btn:active { transform: translateY(1px); }
+    .btn.secondary { background: white; color: var(--primary-700); border-color: var(--primary-700); }
+    .btn.danger { background: var(--danger); border-color: #b91c1c; }
+    .tabs { margin-top: 16px; display: flex; gap: 8px; flex-wrap: wrap; }
+    .tab {
+      padding: 10px 14px; border-radius: 12px; border: 1px solid var(--border);
+      background: #d0ebff; color: var(--text); cursor: pointer; font-weight: 600; font-size: 13px;
+    }
+    .tab.active {
+      background: var(--primary); color: white; border-color: var(--primary-700);
+      box-shadow: 0 6px 18px rgba(59, 130, 246, 0.25);
+    }
+    .subtabs { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
+    .chip {
+      padding: 6px 10px; border-radius: 999px; background: var(--chip);
+      color: var(--text); border: 1px solid var(--border); cursor: pointer; font-size: 12px;
+    }
+    .chip.active { background: var(--primary); color: white; border-color: var(--primary-700); }
+    .panel { margin-top: 16px; background: #d0ebff; border: 1px solid var(--primary-700); border-radius: 14px; overflow: hidden; }
+    .panel-header { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--primary-700); }
+    .panel-header h2 { margin: 0; font-size: 16px; color: var(--primary-700); }
+    .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .table-wrap { overflow-x:auto; }
+    table { width: 100%; border-collapse: collapse; }
+    thead th { text-align: left; font-size: 12px; color: var(--text); padding: 12px 16px; border-bottom: 1px solid var(--primary-700); background: #d0ebff; }
+    tbody td { padding: 12px 16px; border-bottom: 1px solid var(--primary-700); font-size: 14px; color: var(--text); }
+    tbody tr:hover { background: rgba(59, 130, 246, 0.1); }
+    .status { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+    .status.active { background: #22c55e33; color: #16a34a; border: 1px solid #16a34a77; }
+    .status.inactive { background: #ef444433; color: #b91c1c; border: 1px solid #b91c1c77; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; padding: 16px; }
+    .card { background: white; border: 1px solid var(--primary-700); border-radius: 14px; padding: 14px; color: var(--text); }
+    .card h4 { margin: 0 0 6px; }
+    .card .muted { color: var(--muted); font-size: 12px; }
+    /* Modal */
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(2,6,23,0.4); display: none; align-items: center; justify-content: center; z-index: 1000; }
+    .modal { width: 95%; max-width: 600px; background: #d0ebff; border: 1px solid var(--primary-700); border-radius: 14px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.3); color: var(--text); }
+    .modal header { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--primary-700); }
+    .modal header h3 { margin:0; font-size:16px; color: var(--primary-700); }
+    .modal .content { padding: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field label { font-size: 12px; color: var(--text); }
+    .field input, .field select, .field textarea { background: white; color: var(--text); border: 1px solid var(--primary-700); border-radius: 10px; padding: 10px; outline: none; width: 100%; }
+    .field textarea { resize: vertical; }
+    .modal footer { display: flex; justify-content: flex-end; gap: 8px; padding: 14px 16px; border-top: 1px solid var(--primary-700); }
+    @media (max-width: 720px) {
+      header { grid-template-columns: 1fr; }
+      .modal .content { grid-template-columns: 1fr; }
+      .panel-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+      .actions { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>Resource Center Dashboard</h1>
+    <div class="control">
+      <label for="date">Date</label>
+      <input type="date" id="date" />
+    </div>
+    <div class="control">
+      <label for="shift">Shift</label>
+      <select id="shift">
+        <option value="Morning">Morning</option>
+        <option value="Evening">Evening</option>
+        <option value="Night">Night</option>
+      </select>
+    </div>
+    <div class="control" style="justify-content:flex-end; display:flex; gap:8px;">
+      <button class="btn" id="addResourceBtn">+ Add Resource</button>
+      <button class="btn secondary" id="quickAddBtn">⚡ Quick Add</button>
+      <button class="btn secondary" id="toggleViewBtn">Toggle View</button>
+    </div>
+  </header>
+
+  <div class="tabs" id="categoryTabs">
+    <button class="tab active" data-category="Hospital">Hospital</button>
+    <button class="tab" data-category="KK">KK</button>
+    <button class="tab" data-category="STJOHN">St. John</button>
+    <button class="tab" data-category="Status">Status</button>
+  </div>
+
+  <div class="subtabs" id="subTabs"></div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <h2 id="panelTitle">Hospital — HTAR</h2>
+      <div class="actions">
+        <button class="btn secondary" id="exportBtn">Export JSON</button>
+        <button class="btn secondary" id="clearBtn">Clear current view</button>
+      </div>
+    </div>
+    <div class="table-wrap" id="tableWrap"></div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-backdrop" id="modalBackdrop" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <header>
+      <h3 id="modalTitle">Add Resource</h3>
+      <button class="btn secondary" id="closeModalBtn">Close</button>
+    </header>
+    <div class="content">
+      <div class="field">
+        <label for="resName">Name</label>
+        <input id="resName" type="text" placeholder="Full name" />
+      </div>
+      <div class="field">
+        <label for="resTeam">Team</label>
+        <input id="resTeam" type="text" placeholder="Team name" />
+      </div>
+      <div class="field" id="resPPP">
+        <label>PPP Names</label>
+        <button type="button" class="btn secondary" id="addPPPBtn">+ Add PPP</button>
+      </div>
+      <div class="field" id="resPKB">
+        <label>PKB Names</label>
+        <button type="button" class="btn secondary" id="addPKBBtn">+ Add PKB</button>
+      </div>
+      <div class="field">
+        <label for="resAmb">Ambulance No.</label>
+        <input id="resAmb" type="text" placeholder="e.g., AMB-12" />
+      </div>
+      <div class="field">
+        <label for="resStatus">Status</label>
+        <select id="resStatus">
+          <option value="Active" selected>Active</option>
+          <option value="Inactive">Inactive</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="resCategory">Category</label>
+        <select id="resCategory">
+          <option value="Hospital">Hospital</option>
+          <option value="KK">KK</option>
+          <option value="STJOHN">STJOHN</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="resSubcat">Subcategory</label>
+        <select id="resSubcat"></select>
+      </div>
+      <div class="field">
+        <label for="resCallCard">Call Card No</label>
+        <input id="resCallCard" type="text" placeholder="Call Card No" />
+      </div>
+      <div class="field">
+        <label for="resAddress">Address</label>
+        <input id="resAddress" type="text" placeholder="Address" />
+      </div>
+      <div class="field">
+        <label for="resTime">Time</label>
+        <input id="resTime" type="text" placeholder="HH:MM" />
+      </div>
+      <div class="field">
+        <label for="resCaseDetails">Case Details</label>
+        <textarea id="resCaseDetails" rows="3" placeholder="Case details"></textarea>
+      </div>
+    </div>
+    <footer>
+      <button class="btn secondary" id="resetFormBtn">Reset</button>
+      <button class="btn" id="saveResourceBtn">Save</button>
+    </footer>
+  </div>
+</div>
+
+<script>
+  // ===== DATA & STATE =====
+  const SUBCATS = {
+    Hospital: { HTAR:['HTAR1','HTAR2','HTAR3','HTAR4'], HSAS:['HSAS1','HSAS2','HSAS3'], HBT:['HBT1','HBT2'] },
+    KK: { KLANG:['MERU','KAPAR','P.INDAH'], 'K.LANGAT':['BKT CHANGGANG','TGP','JENJAROM','BANDAR'] },
+    STJOHN: { STJOHN:['STJOHN1'] }
+  };
+  const state = { category:'Hospital', subcat:'HTAR', editingId:null, view:'card', statusFilter:'All' };
+
+  function storageKey(){ const date=document.getElementById('date').value||'any'; const shift=document.getElementById('shift').value||'any'; return `resources:${date}:${shift}`; }
+  function loadData(){ const raw=localStorage.getItem(storageKey()); return raw?JSON.parse(raw):[]; }
+  function saveData(data){ localStorage.setItem(storageKey(), JSON.stringify(data)); }
+
+  // ===== UI =====
+  const tableWrap=document.getElementById('tableWrap');
+  const resName=document.getElementById('resName'), resTeam=document.getElementById('resTeam');
+  const resPPP=document.getElementById('resPPP'), resPKB=document.getElementById('resPKB');
+  const resAmb=document.getElementById('resAmb'), resStatus=document.getElementById('resStatus');
+  const resCategory=document.getElementById('resCategory'), resSubcat=document.getElementById('resSubcat');
+  const resCallCard=document.getElementById('resCallCard'), resAddress=document.getElementById('resAddress');
+  const resTime=document.getElementById('resTime'), resCaseDetails=document.getElementById('resCaseDetails');
+  const backdrop=document.getElementById('modalBackdrop');
+
+  function setPanelTitle(){ document.getElementById('panelTitle').textContent = `${state.category} — ${state.subcat}`; }
+
+  function renderSubtabs(){ const wrap=document.getElementById('subTabs'); wrap.innerHTML=''; if(state.category!=='Status'){ Object.keys(SUBCATS[state.category]||{}).forEach(sub=>{ const chip=document.createElement('button'); chip.className='chip'+(sub===state.subcat?' active':''); chip.textContent=sub; chip.onclick=()=>{ state.subcat=sub; renderSubtabs(); setPanelTitle(); renderTable(); }; wrap.appendChild(chip); }); }}
+
+  function addInput(container, values=[]){ container.querySelectorAll('div.dynamic').forEach(d=>d.remove()); values.forEach(v=>{ const wrapper=document.createElement('div'); wrapper.className='dynamic'; wrapper.style.display='flex'; wrapper.style.gap='6px'; wrapper.style.marginBottom='6px'; const input=document.createElement('input'); input.type='text'; input.value=v; input.placeholder='Name'; input.style.flex='1'; const removeBtn=document.createElement('button'); removeBtn.type='button'; removeBtn.textContent='x'; removeBtn.className='btn danger'; removeBtn.style.padding='2px 6px'; removeBtn.onclick=()=>wrapper.remove(); wrapper.appendChild(input); wrapper.appendChild(removeBtn); container.insertBefore(wrapper, container.querySelector('button')); }); }
+
+  document.getElementById('addPPPBtn').onclick=()=>addInput(resPPP,['']);
+  document.getElementById('addPKBBtn').onclick=()=>addInput(resPKB,['']);
+
+  function populateSubcatOptions(cat){ resSubcat.innerHTML=''; Object.keys(SUBCATS[cat]||{}).forEach(sub=>{ const opt=document.createElement('option'); opt.value=sub; opt.textContent=sub; resSubcat.appendChild(opt); }); }
+
+  resCategory.onchange = ()=>populateSubcatOptions(resCategory.value);
+
+  function resetForm(){
+    resName.value=''; resTeam.value='';
+    addInput(resPPP,[]); addInput(resPKB,[]);
+    resAmb.value=''; resStatus.value='Active';
+    resCategory.value='Hospital'; populateSubcatOptions('Hospital'); resSubcat.value=Object.keys(SUBCATS['Hospital'])[0];
+    resCallCard.value=''; resAddress.value=''; resTime.value=''; resCaseDetails.value='';
+  }
+
+  function openModal(id=null){
+    backdrop.style.display='flex'; state.editingId=id;
+    if(id){ const data=loadData().find(r=>r.id===id); if(!data) return;
+      resName.value=data.name; resTeam.value=data.team;
+      addInput(resPPP,data.ppp); addInput(resPKB,data.pkb);
+      resAmb.value=data.ambulance||''; resStatus.value=data.status; resCategory.value=data.category;
+      populateSubcatOptions(data.category); resSubcat.value=data.subcat;
+      resCallCard.value=data.callCard||''; resAddress.value=data.address||''; resTime.value=data.time||''; resCaseDetails.value=data.caseDetails||''; 
+    } else resetForm();
+  }
+  document.getElementById('closeModalBtn').onclick=()=>backdrop.style.display='none';
+  document.getElementById('resetFormBtn').onclick=resetForm;
+  document.getElementById('addResourceBtn').onclick=()=>openModal(null);
+
+  document.getElementById('saveResourceBtn').onclick=()=>{
+    const data=loadData();
+    const ppp=[...resPPP.querySelectorAll('input')].map(i=>i.value).filter(v=>v);
+    const pkb=[...resPKB.querySelectorAll('input')].map(i=>i.value).filter(v=>v);
+    const resource={id: state.editingId||Date.now(), name: resName.value, team: resTeam.value, ppp, pkb, ambulance: resAmb.value, status: resStatus.value, category: resCategory.value, subcat: resSubcat.value, callCard: resCallCard.value, address: resAddress.value, time: resTime.value, caseDetails: resCaseDetails.value};
+    if(state.editingId){ const idx=data.findIndex(r=>r.id===state.editingId); data[idx]=resource; } else data.push(resource);
+    saveData(data); backdrop.style.display='none'; renderTable();
+  };
+
+  function deleteResource(id){ if(!confirm('Delete this resource?')) return; let data=loadData(); data=data.filter(r=>r.id!==id); saveData(data); renderTable(); }
+
+  function renderTable(){
+    if(state.view==='table'){
+      tableWrap.innerHTML='<table><thead><tr><th>Name</th><th>Team</th><th>PPP</th><th>PKB</th><th>Ambulance</th><th>Status</th><th>Call Card</th><th>Address</th><th>Time</th><th>Case Details</th><th>Actions</th></tr></thead><tbody id="tableBody"></tbody></table>';
+      const tbody=document.getElementById('tableBody'); tbody.innerHTML='';
+      let data=loadData();
+      if(state.category==="Status" && state.statusFilter!=="All") data=data.filter(r=>r.status===state.statusFilter);
+      else data=data.filter(r=>r.category===state.category && r.subcat===state.subcat);
+      data.forEach(r=>{
+        const tr=document.createElement('tr');
+        tr.innerHTML=`<td>${r.name}</td><td>${r.team}</td><td>${r.ppp.join(', ')}</td><td>${r.pkb.join(', ')}</td><td>${r.ambulance||'N/A'}</td><td>${r.status}</td><td>${r.callCard||''}</td><td>${r.address||''}</td><td>${r.time||''}</td><td>${r.caseDetails||''}</td><td><button class="btn secondary">Edit</button> <button class="btn danger">Delete</button></td>`;
+        tr.querySelector('.btn.secondary').onclick=()=>openModal(r.id);
+        tr.querySelector('.btn.danger').onclick=()=>deleteResource(r.id);
+        tbody.appendChild(tr);
+      });
+    } else { // card view
+      let data=loadData(); if(state.category==="Status" && state.statusFilter!=="All") data=data.filter(r=>r.status===state.statusFilter);
+      else data=data.filter(r=>r.category===state.category && r.subcat===state.subcat);
+      tableWrap.innerHTML='<div class="cards"></div>';
+      const cards=document.querySelector('.cards'); cards.innerHTML='';
+      data.forEach(r=>{
+        const div=document.createElement('div'); div.className='card';
+        div.innerHTML=`<h4>${r.name}</h4><div class="muted">${r.team}</div>
+          <div><b>PPP:</b> ${r.ppp.join(', ')}</div><div><b>PKB:</b> ${r.pkb.join(', ')}</div>
+          <div><b>Amb:</b> ${r.ambulance||'N/A'}</div><div class="status ${r.status.toLowerCase()}">${r.status}</div>
+          <div><b>Call Card:</b> ${r.callCard||''}</div><div><b>Address:</b> ${r.address||''}</div>
+          <div><b>Time:</b> ${r.time||''}</div><div><b>Case:</b> ${r.caseDetails||''}</div>
+          <div style="margin-top:8px;"><button class="btn secondary">Edit</button> <button class="btn danger">Delete</button></div>`;
+        div.querySelector('.btn.secondary').onclick=()=>openModal(r.id);
+        div.querySelector('.btn.danger').onclick=()=>deleteResource(r.id);
+        cards.appendChild(div);
+      });
+    }
+  }
+
+  document.getElementById('toggleViewBtn').onclick=()=>{
+    state.view=state.view==='card'?'table':'card';
+    renderTable();
+  };
+
+  // Tabs
+  document.querySelectorAll('.tab').forEach(tab=>{ tab.onclick=()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    state.category=tab.dataset.category;
+    state.subcat=Object.keys(SUBCATS[state.category]||{})[0]||'';
+    setPanelTitle(); renderSubtabs(); renderTable();
+  }; });
+
+  document.getElementById('date').value=new Date().toISOString().slice(0,10);
+  setPanelTitle(); renderSubtabs(); renderTable();
+</script>
+</body>
+</html>
